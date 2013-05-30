@@ -10,7 +10,7 @@ def colorize(fg,bg):
 
 endcolor = '\x1b[0m'
 
-page = urllib.urlopen("http://wap.vasttrafik.se/QueryForm.aspx?hpl=Godhemsgatan+(G%C3%B6teborg)").read()
+page = urllib.urlopen("http://wap.vasttrafik.se/QueryForm.aspx?hpl=Godhemsgatan+(Göteborg)").read()
 soup = BeautifulSoup(page, convertEntities=BeautifulSoup.HTML_ENTITIES)
 
 trams = list()
@@ -25,8 +25,8 @@ for tr in soup.body.find('table', attrs={'id':'GridViewForecasts'}).findAll('tr'
 	to = num.findNext('td')
 	next = to.findNext('td')
 	nextnext = next.findNext('td').findNext('td')
-	trams.append(dict(num=num.font.text,numbg=num['bgcolor'],numfg=num.font['color'],to=to.font.text,next=next.font.text,nextnext=nextnext.font.text))
+	trams.append(dict(num=num.font.text,numbg=num['bgcolor'],numfg=num.font['color'],to=to.font.text,next=next.font.text.replace('Nu','0'),nextnext=nextnext.font.text))
 
-for tram in trams:
-	print colorize(tram['numfg'],tram['numbg'])+'\t'+tram['num']+'\t'+endcolor+'\t'+tram['to']+'\t\t\x1b[1m'+tram['next']+'\x1b[0m\t'+tram['nextnext']
+for tram in sorted(trams, key=lambda tram: int(tram['next'])):
+	print colorize(tram['numfg'],tram['numbg'])+'\t'+tram['num']+'\t'+endcolor+'\t'+tram['to']+(20-len(tram['to']))*' '+'\t\x1b[1m'+tram['next']+'\x1b[0m\t'+tram['nextnext']
 
