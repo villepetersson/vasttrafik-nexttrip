@@ -10,6 +10,19 @@ def colorize(fg,bg):
 
 endcolor = '\x1b[0m'
 
+def generate_stops():
+	page = urllib.urlopen("http://wap.vasttrafik.se/QueryForm.aspx").read()
+	soup = BeautifulSoup(page, convertEntities=BeautifulSoup.HTML_ENTITIES)
+
+	stops = open("stops","w")
+
+	# Find all stops in the list.
+	for option in soup.body.find('select', attrs={'id':'DropDownListStop'}).findAll('option'):
+		stops.write(option.text.encode('utf-8')+"\n")
+
+	stops.close()
+
+
 def get_trams(stopname="Godhemsgatan+(Göteborg)"):
 	page = urllib.urlopen("http://wap.vasttrafik.se/QueryForm.aspx?hpl=%s"%(stopname)).read()
 	soup = BeautifulSoup(page, convertEntities=BeautifulSoup.HTML_ENTITIES)
