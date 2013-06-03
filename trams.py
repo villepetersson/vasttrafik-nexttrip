@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 # -- coding: utf-8 --
 import urllib
 from x256 import x256
