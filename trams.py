@@ -3,7 +3,7 @@
 import urllib
 from x256 import x256
 from BeautifulSoup import BeautifulSoup
-
+import sys
 
 def colorize(fg,bg):
 	return '\x1b[38;5;' + str(x256.from_hex(fg[1:])) + 'm' + '\x1b[48;5;' + str(x256.from_hex(bg[1:])) + 'm'
@@ -16,12 +16,21 @@ def generate_stops():
 
 	stops = open("stops","w")
 
+	string = ""
 	# Find all stops in the list.
 	for option in soup.body.find('select', attrs={'id':'DropDownListStop'}).findAll('option'):
-		stops.write(option.text.encode('utf-8')+"\n")
+		string+=option.text.encode('utf-8')+"\n"
 
+	stops.write(string)
 	stops.close()
 
+def find_stop(stopname):
+	stops = list()
+	for line in open("stops"):
+		if stopname.upper() in line.upper():
+			stops.append(line)
+
+	return stops
 
 def get_trams(stopname="Godhemsgatan+(Göteborg)"):
 	page = urllib.urlopen("http://wap.vasttrafik.se/QueryForm.aspx?hpl=%s"%(stopname)).read()
@@ -43,8 +52,29 @@ def get_trams(stopname="Godhemsgatan+(Göteborg)"):
 
 	return trams
 
-def print_trams(trams):
-	for tram in sorted(trams, key=lambda tram: int(tram['next'])):
+def print_trams(tramdict):
+	#trams.sort(key=lambda tram: tram['next'])
+	for tram in tramdict:
 		print colorize(tram['numfg'],tram['numbg'])+'\t'+tram['num']+'\t'+endcolor+'\t'+tram['to']+(20-len(tram['to']))*' '+'\t\x1b[1m'+tram['next']+'\x1b[0m\t'+tram['nextnext']
 
-#print_trams(get_trams())
+def main(argv):                         
+	stops = list()
+	stops = find_stop(argv[0])
+
+	if len(stops)==1:
+		trams = get_trams(str(stops[0]))
+		print_trams(trams)
+	elif len(stops)==0:
+		print "Finns ingen sådan hållplats."
+	else:
+		i = 0
+		for stop in stops:
+			print "%s: %s"%(str(i), stop)
+			i+=1
+
+		select = raw_input("Välj hållplats: ")
+		print_trams(get_trams(stops[int(select)]))                 
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
+
