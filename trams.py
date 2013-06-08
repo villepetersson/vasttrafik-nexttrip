@@ -1,6 +1,7 @@
 #!/usr/bin/python2
 # -- coding: utf-8 --
 import urllib
+from fuzzywuzzy import process
 from x256 import x256
 from BeautifulSoup import BeautifulSoup
 import sys
@@ -26,9 +27,15 @@ def generate_stops():
 
 def find_stop(stopname):
 	stops = list()
-	for line in open("stops"):
+	fewerstops = list()
+	allstops = open("stops").read().decode('utf-8').split('\n')
+
+	# Because the fuzzywuzzy matching is slow, single out the possible results first.
+	for line in allstops:
 		if stopname.upper() in line.upper():
-			stops.append(line)
+			fewerstops.append(line)
+
+	stops = process.extract(stopname, fewerstops, limit=10)
 
 	return stops
 
@@ -69,11 +76,11 @@ def main(argv):
 	else:
 		i = 0
 		for stop in stops:
-			print "%s: %s"%(str(i), stop)
+			print "%s: %s"%(str(i), stop[0])
 			i+=1
 
 		select = raw_input("Välj hållplats: ")
-		print_trams(get_trams(stops[int(select)]))                 
+		print_trams(get_trams(stops[int(select)][0].encode('utf-8')))                 
 
 if __name__ == "__main__":
     main(sys.argv[1:])
