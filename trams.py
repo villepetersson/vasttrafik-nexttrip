@@ -25,17 +25,18 @@ def generate_stops():
 	stops.write(string)
 	stops.close()
 
-def find_stop(stopname):
+def find_stop(stopnames):
 	stops = list()
 	fewerstops = list()
 	allstops = open("stops").read().decode('utf-8').split('\n')
 
 	# Because the fuzzywuzzy matching is slow, single out the possible results first.
 	for line in allstops:
-		if stopname.upper() in line.upper():
-			fewerstops.append(line)
+		for stopname in stopnames:
+			if stopname.upper() in line.upper():
+				fewerstops.append(line)
 
-	stops = process.extract(stopname, fewerstops, limit=10)
+	stops = process.extract(stopnames, fewerstops, limit=10)
 
 	return stops
 
@@ -66,7 +67,7 @@ def print_trams(tramdict):
 
 def main(argv):                         
 	stops = list()
-	stops = find_stop(argv[0])
+	stops = find_stop(argv)
 
 	if len(stops)==1:
 		trams = get_trams(str(stops[0]))
